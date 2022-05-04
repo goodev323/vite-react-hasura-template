@@ -11,7 +11,7 @@
     "prettier"
   ],
   "parser": "@typescript-eslint/parser",
-  "ignorePatterns": ["dist/", "vite.config.ts", "*.d.ts"],
+  "ignorePatterns": ["dist/", "vite.config.ts", "*.d.ts", "codegen.ts"],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true

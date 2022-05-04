@@ -1,45 +1,46 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import { Auth0Provider, useAuth0 } from "@auth0/auth0-react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { LoadingSplash } from "./components/LoadingSplash";
+import { GraphqlProvider } from "./graphql/GraphqlProvider";
+import { Layout } from "./layout";
+import { LoginPage } from "./pages/login";
+import { UsersPage } from "./pages/users";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
+  console.log(import.meta.env.VITE_HASURA_ENDPOINT);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
-    </div>
-  )
-}
+    <BrowserRouter>
+      <Auth0Provider
+        domain={import.meta.env.VITE_AUTH0_DOMAIN}
+        clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+        redirectUri={import.meta.env.VITE_AUTH0_REDIRECT_URI}
+        cacheLocation="localstorage"
+      >
+        <GraphqlProvider>
+          <Routes>
+            <Route path="/" element={<AuthRoute />}>
+              <Route element={<Layout />}>
+                <Route path="users" element={<UsersPage />} />
+                <Route path="/" element={<Navigate to="/users" replace />} />
+                <Route path="*" element={<Navigate to="/users" replace />} />
+              </Route>
+            </Route>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </GraphqlProvider>
+      </Auth0Provider>
+    </BrowserRouter>
+  );
+};
 
-export default App
+export const AuthRoute = () => {
+  const { isAuthenticated, isLoading } = useAuth0();
+  console.log(isAuthenticated);
+  if (isLoading) return <LoadingSplash />;
+  if (!isAuthenticated) return <Navigate to="/login" />;
+
+  return <Outlet />;
+};
+
+export default App;
